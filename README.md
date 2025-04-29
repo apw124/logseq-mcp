@@ -2,6 +2,10 @@
 
 This project provides a set of Model Context Protocol (MCP) tools that enable AI agents to interact with your local Logseq instance.
 
+<a href="https://glama.ai/mcp/servers/@apw124/logseq-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@apw124/logseq-mcp/badge" alt="Logseq Tools MCP server" />
+</a>
+
 ## Installation
 
 1. Ensure you have Python 3.11+ installed
