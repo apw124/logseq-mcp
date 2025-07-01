@@ -2,7 +2,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 import re
 
 
@@ -102,7 +102,7 @@ def convert_journal_name_to_path(journal_name: str, graph_path: str) -> Optional
     return None
 
 
-def get_file_metadata(file_path: Path) -> Dict[str, any]:
+def get_file_metadata(file_path: Path) -> Dict[str, Any]:
     """
     Get file system metadata for a page file.
     

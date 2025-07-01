@@ -1,5 +1,4 @@
 """MCP Resources for providing contextual information about the Logseq graph."""
-import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
@@ -43,8 +42,13 @@ async def get_graph_info() -> Dict[str, Any]:
             directories = get_graph_directories(config.LOGSEQ_GRAPH_PATH)
             
             # Count files
-            page_files = list((directories.get('pages', None) or Path('.')).glob('*.md'))
-            journal_files = list((directories.get('journals', None) or Path('.')).glob('*.md'))
+            # TODO: For very large graphs, consider caching directory listings
+            # separately to avoid repeated file system scans
+            pages_dir = directories.get('pages')
+            journals_dir = directories.get('journals')
+            
+            page_files = list(pages_dir.glob('*.md')) if pages_dir else []
+            journal_files = list(journals_dir.glob('*.md')) if journals_dir else []
             
             # Calculate total size
             total_size = 0
@@ -244,6 +248,8 @@ async def get_graph_structure() -> Dict[str, Any]:
         orphaned_pages = []
         page_link_counts = defaultdict(int)
         
+        # TODO: For large graphs, consider implementing pagination or limiting 
+        # the number of pages processed to improve performance
         for page in all_pages:
             page_name = page.get('name', '')
             
@@ -267,15 +273,15 @@ async def get_graph_structure() -> Dict[str, Any]:
                     has_outgoing = any('[[' in block.get('content', '') for block in blocks)
                     if not has_outgoing:
                         orphaned_pages.append(page_name)
-            except Exception:
-                pass
+            except Exception as e:
+                log(f"Error processing page '{page_name}': {e}")
         
         # Get most linked pages
         most_linked = sorted(
             page_link_counts.items(), 
             key=lambda x: x[1], 
             reverse=True
-        )[:10]
+        )[:config.MAX_LINKED_PAGES]
         
         # Build structure summary
         structure = {
@@ -285,7 +291,7 @@ async def get_graph_structure() -> Dict[str, Any]:
             'namespaces': {
                 ns: {
                     'page_count': len(pages),
-                    'pages': sorted(pages)[:10]  # First 10 pages
+                    'pages': sorted(pages)[:config.MAX_PAGES_PER_NAMESPACE]
                 }
                 for ns, pages in namespaces.items()
                 if ns != '_root'
@@ -293,7 +299,7 @@ async def get_graph_structure() -> Dict[str, Any]:
             'root_pages': len(namespaces.get('_root', [])),
             'orphaned_pages': {
                 'count': len(orphaned_pages),
-                'pages': orphaned_pages[:20]  # First 20 orphaned pages
+                'pages': orphaned_pages[:config.MAX_ORPHANED_PAGES]
             },
             'most_linked_pages': [
                 {'page': page, 'link_count': count}

@@ -18,6 +18,11 @@ class Config:
     MAX_BATCH_SIZE: int = int(os.getenv("MAX_BATCH_SIZE", "50"))
     REQUEST_TIMEOUT: int = int(os.getenv("REQUEST_TIMEOUT", "30"))
     
+    # Resource Limits
+    MAX_LINKED_PAGES: int = int(os.getenv("MAX_LINKED_PAGES", "10"))
+    MAX_PAGES_PER_NAMESPACE: int = int(os.getenv("MAX_PAGES_PER_NAMESPACE", "10"))
+    MAX_ORPHANED_PAGES: int = int(os.getenv("MAX_ORPHANED_PAGES", "20"))
+    
     @classmethod
     def validate(cls) -> None:
         """Validate configuration settings."""
