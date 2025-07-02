@@ -73,17 +73,16 @@ async def get_graph_info() -> Dict[str, Any]:
 
 
 @mcp.resource("logseq://pages/recent")
-async def get_recent_pages(limit: int = 20) -> List[Dict[str, Any]]:
+async def get_recent_pages() -> List[Dict[str, Any]]:
     """
     Returns recently modified pages with timestamps from file metadata.
     
-    Args:
-        limit: Maximum number of pages to return (default: 20)
-        
     Returns:
-        List of pages sorted by modification time (most recent first)
+        List of pages sorted by modification time (most recent first).
+        Default limit is 20 pages.
     """
     def fetch_recent_pages():
+        limit = 20  # Default limit
         if not config.LOGSEQ_GRAPH_PATH:
             log("Warning: LOGSEQ_GRAPH_PATH not configured, returning pages without timestamps")
             pages = logseq_client.get_all_pages()
@@ -116,17 +115,15 @@ async def get_recent_pages(limit: int = 20) -> List[Dict[str, Any]]:
 
 
 @mcp.resource("logseq://journal/recent")
-async def get_recent_journals(days: int = 7) -> List[Dict[str, Any]]:
+async def get_recent_journals() -> List[Dict[str, Any]]:
     """
     Returns journal entries from the last N days.
     
-    Args:
-        days: Number of days to look back (default: 7)
-        
     Returns:
-        List of journal pages from the specified time period
+        List of journal pages from the last 7 days by default
     """
     def fetch_recent_journals():
+        days = 7  # Default to last 7 days
         # Get all pages
         all_pages = logseq_client.get_all_pages()
         
