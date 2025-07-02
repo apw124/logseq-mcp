@@ -1,8 +1,20 @@
 # Logseq MCP Tools
 
+[![smithery badge](https://smithery.ai/badge/@apw124/logseq-mcp)](https://smithery.ai/server/@apw124/logseq-mcp)
+
 This project provides a set of Model Context Protocol (MCP) tools that enable AI agents to interact with your local Logseq instance.
 
 ## Installation
+
+### Installing via Smithery
+
+To install Logseq MCP Tools for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@apw124/logseq-mcp):
+
+```bash
+npx -y @smithery/cli install @apw124/logseq-mcp --client claude
+```
+
+### Manual Installation
 
 1. Ensure you have Python 3.11+ installed
 2. Clone this repository
