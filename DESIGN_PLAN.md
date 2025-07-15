@@ -15,6 +15,7 @@ This phased design plan addresses the identified improvements for the Logseq MCP
   - Performance degrades with ~10,000 interconnected pages
   - Memory issues with large datasets
   - **Block Content Restrictions**: Each block can only contain a single paragraph or list type - no mixing of multiple unordered lists or headings within one block
+  - **Empty Block Handling**: When creating content on a page, use the last empty block if one exists, otherwise create a new block (unless user specifies a specific location)
 
 ### FastMCP Framework
 - **Resource Pattern**: `@mcp.resource("protocol://path/{param}")` decorator
@@ -215,10 +216,22 @@ This phased design plan addresses the identified improvements for the Logseq MCP
        # Get template content
        template = await get_template(template_name)
        
+       # Get existing blocks to check for empty ones
+       page_blocks = await get_page_blocks(page_name)
+       last_empty_block = find_last_empty_block(page_blocks)
+       used_last_empty = False
+       
        # Replace variables and create blocks
        # IMPORTANT: Split content if it contains multiple lists or mixed content types
-       for block in template['blocks']:
+       for i, block in enumerate(template['blocks']):
            content = replace_variables(block['content'], variables)
+           
+           # For the first template block, check if we should use the last empty block
+           if i == 0 and last_empty_block and not used_last_empty:
+               await update_block(last_empty_block['id'], content)
+               used_last_empty = True
+               continue
+           
            # Check if content needs to be split into multiple blocks
            if needs_splitting(content):
                for sub_content in split_content(content):
@@ -435,7 +448,7 @@ def get_file_metadata(file_path: Path) -> dict:
 ```python
 # utils/content_formatter.py
 import re
-from typing import List
+from typing import List, Optional, Dict
 
 def needs_splitting(content: str) -> bool:
     """
@@ -527,6 +540,26 @@ def format_for_logseq(content: str) -> List[str]:
     if needs_splitting(content):
         return split_content(content)
     return [content]
+
+def find_last_empty_block(page_blocks: List[Dict]) -> Optional[Dict]:
+    """
+    Find the last empty block on a page.
+    
+    Args:
+        page_blocks: List of existing blocks on the page
+        
+    Returns:
+        The last empty block if one exists, None otherwise
+    """
+    if not page_blocks:
+        return None
+    
+    # Search from the end for an empty block
+    for block in reversed(page_blocks):
+        if not block.get('content', '').strip():
+            return block
+    
+    return None
 ```
 
 ### Caching Implementation
